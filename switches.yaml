@@ -1,0 +1,40 @@
+switch:
+  - platform: gpio
+    pin: GPIO7
+    id: zRST_gpio
+    inverted: true
+    restore_mode: ALWAYS_OFF
+
+  - platform: template
+    name: "Zigbee Reset"
+    icon: mdi:toggle-switch
+    id: zRST
+    turn_on_action:
+      - switch.turn_on: zRST_gpio
+      - delay: 15ms
+      - switch.turn_off: zRST_gpio
+
+  - platform: gpio
+    pin: GPIO14
+    name: "Zigbee Flashmode"
+    icon: mdi:toggle-switch
+    id: zBSL
+    inverted: true
+    internal: true
+    restore_mode: ALWAYS_OFF
+
+  - platform: template
+    name: "Zigbee Update"
+    id: zigbee_update
+    icon: mdi:cellphone-arrow-down
+    turn_on_action:
+      - script.execute: fw_update_mode
+    turn_off_action:
+      - switch.toggle: zRST
+
+  - platform: ld2412
+    engineering_mode:
+      name: "mmWave Engineering Mode"
+    bluetooth:
+      name: "mmWave Bluetooth"
+

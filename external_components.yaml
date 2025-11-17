@@ -1,0 +1,6 @@
+external_components:
+  - source: github://mercenaruss/esphome-stream-server
+
+stream_server:
+  uart_id: zigbee
+

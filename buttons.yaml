@@ -1,0 +1,38 @@
+button:
+  - platform: template
+    name: "Calibrate CO2 Sensor"
+    entity_category: config
+    on_press:
+      - scd4x.perform_forced_calibration:
+          value: 426
+          id: scd40_component
+
+  - platform: template
+    name: "TVOC Calibration"
+    icon: mdi:lungs
+    entity_category: config
+    on_press:
+      - ags10.set_zero_point:
+          id: ags10_1
+          mode: CURRENT_VALUE
+
+  - platform: restart
+    icon: mdi:power-cycle
+    name: "ESP Reboot"
+    entity_category: diagnostic
+
+  - platform: ld2412
+    factory_reset:
+      name: "mmWave Factory Reset"
+    restart:
+      name: "mmWave Restart"
+    query_params:
+      name: "mmWave Default"
+    start_dynamic_background_correction:
+      name: "mmWave Calibration"
+
+select:
+  - platform: ld2412
+    distance_resolution:
+      name: "mmWave Distance Resolution"
+

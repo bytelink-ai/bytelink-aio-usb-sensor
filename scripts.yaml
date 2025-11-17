@@ -1,0 +1,19 @@
+script:
+  - id: fw_update_mode
+    then:
+      - switch.turn_on: zBSL
+      - delay: 20ms
+      - switch.turn_on: zRST_gpio
+      - delay: 25ms
+      - switch.turn_off: zRST_gpio
+      - delay: 100ms
+      - switch.turn_off: zBSL
+
+  - id: exit_update_mode
+    then:
+      - switch.turn_off: zBSL
+      - delay: 10ms
+      - switch.turn_on: zRST_gpio
+      - delay: 25ms
+      - switch.turn_off: zRST_gpio
+

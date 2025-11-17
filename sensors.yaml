@@ -1,0 +1,182 @@
+sensor:
+  - platform: bme68x_bsec2
+    temperature:
+      name: "Temperature"
+      id: bme_temperature
+      device_class: temperature
+    humidity:
+      name: "Humidity"
+      unit_of_measurement: "%"
+      id: bme_humidity
+      device_class: humidity
+      internal: true
+    pressure:
+      name: "Air Pressure"
+      id: bme_pressure
+      icon: "mdi:gauge"
+      device_class: pressure
+    co2_equivalent:
+      name: "eCO2"
+      icon: "mdi:molecule-co2"
+      device_class: carbon_dioxide
+    breath_voc_equivalent:
+      name: "VOC Breath Equivalent"
+      icon: "mdi:molecule"
+      device_class: volatile_organic_compounds
+    iaq:
+      name: "In Air Quality"
+      id: iaq
+      icon: "mdi:approximately-equal"
+    gas_resistance:
+      name: "BME Gas Resistance"
+      icon: "mdi:omega"
+      internal: true
+
+  - platform: scd4x
+    ambient_pressure_compensation_source: bme_pressure
+    ambient_pressure_compensation: true
+    id: scd40_component
+    co2:
+      name: "CO2 Concentration"
+      id: scd_co2
+    temperature:
+      id: scd41_temperature
+      name: "Device Temperature"
+      device_class: temperature
+    humidity:
+      id: scd41_humidity
+      name: "Device Humidity"
+      device_class: humidity
+    measurement_mode: single_shot
+    update_interval: 3s
+    address: 0x62
+    automatic_self_calibration: false
+
+  - platform: template
+    name: "Humidity"
+    id: bme_humidity_new
+    device_class: humidity
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    lambda: |-
+      float T = id(bme_temperature).state;
+      float RH = id(bme_humidity).state;
+      if (isnan(T) || isnan(RH)) return NAN;
+
+      const float T0 = 20.0f;
+      const float ALPHA = -1.00f;
+      float dT = (T > T0) ? ALPHA * logf(1.0f + (T - T0)) : 0.0f;
+
+      const float a = 17.62f, b = 243.12f;
+      float gamma = (a*T)/(b+T) + logf(fmaxf(RH, 0.1f)/100.0f);
+      float Td = (b*gamma) / (a - gamma);
+
+      float gamma2 = (a*(T + dT))/(b + (T + dT));
+      float RH_corr = 100.0f * expf((a*Td)/(b+Td) - gamma2);
+
+      return fminf(100.0f, fmaxf(0.0f, RH_corr));
+
+  - platform: bh1750
+    name: "Illuminance Sensor"
+    update_interval: 60s
+
+  - platform: ags10
+    id: ags10_1
+    tvoc:
+      name: "TVOC"
+      id: ags_tvoc_raw
+    address: 0x1A
+    update_interval: 60s
+
+  - platform: ld2412
+    moving_distance:
+      name: "Moving Distance"
+      id: moving_distance
+    still_distance:
+      name: "Still Distance"
+      id: still_distance
+    moving_energy:
+      name: "Moving Energy"
+    still_energy:
+      name: "Still Energy"
+      id: still_energy
+      on_value:
+        then:
+          - lambda: |-
+              float se = id(still_energy).state;
+              if (id(presence_flag).state && se > 0.0f && se <= 100.0f) {
+                id(presence_state_text).publish_state("detected");
+              } else if (!id(presence_flag).state && se <= 0.0f) {
+                id(presence_state_text).publish_state("clear");
+              }
+    gate_0:
+      move_energy:
+        name: "Gate 0 move energy"
+      still_energy:
+        name: "Gate 0 still energy"
+    gate_1:
+      move_energy:
+        name: "Gate 1 move energy"
+      still_energy:
+        name: "Gate 1 still energy"
+    gate_2:
+      move_energy:
+        name: "Gate 2 move energy"
+      still_energy:
+        name: "Gate 2 still energy"
+    gate_3:
+      move_energy:
+        name: "Gate 3 move energy"
+      still_energy:
+        name: "Gate 3 still energy"
+    gate_4:
+      move_energy:
+        name: "Gate 4 move energy"
+      still_energy:
+        name: "Gate 4 still energy"
+    gate_5:
+      move_energy:
+        name: "Gate 5 move energy"
+      still_energy:
+        name: "Gate 5 still energy"
+    gate_6:
+      move_energy:
+        name: "Gate 6 move energy"
+      still_energy:
+        name: "Gate 6 still energy"
+    gate_7:
+      move_energy:
+        name: "Gate 7 move energy"
+      still_energy:
+        name: "Gate 7 still energy"
+    gate_8:
+      move_energy:
+        name: "Gate 8 move energy"
+      still_energy:
+        name: "Gate 8 still energy"
+    gate_9:
+      move_energy:
+        name: "Gate 9 move energy"
+      still_energy:
+        name: "Gate 9 still energy"
+    gate_10:
+      move_energy:
+        name: "Gate 10 move energy"
+      still_energy:
+        name: "Gate 10 still energy"
+    gate_11:
+      move_energy:
+        name: "Gate 11 move energy"
+      still_energy:
+        name: "Gate 11 still energy"
+    gate_12:
+      move_energy:
+        name: "Gate 12 move energy"
+      still_energy:
+        name: "Gate 12 still energy"
+    gate_13:
+      move_energy:
+        name: "Gate 13 move energy"
+      still_energy:
+        name: "Gate 13 still energy"
+

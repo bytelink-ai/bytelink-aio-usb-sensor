@@ -1,0 +1,19 @@
+esphome:
+  name: bytelink-usbaio
+  friendly_name: usbaio
+  name_add_mac_suffix: true
+  project:
+    name: bytelink.aios_room_sensorHV
+    version: "1.0.0"
+
+packages:
+  base: base.yaml
+  sensors: sensors.yaml
+  binary_sensors: binary_sensors.yaml
+  switches: switches.yaml
+  text_sensors: text_sensors.yaml
+  numbers: numbers.yaml
+  buttons: buttons.yaml
+  scripts: scripts.yaml
+  external_components: external_components.yaml
+

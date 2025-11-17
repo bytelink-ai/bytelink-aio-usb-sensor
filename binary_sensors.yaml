@@ -1,0 +1,48 @@
+binary_sensor:
+  - platform: ld2412
+    has_target:
+      name: "Presence"
+      id: presence_flag
+      on_state:
+        then:
+          - lambda: |-
+              float se = id(still_energy).state;
+              if (id(presence_flag).state && se > 0.0f && se <= 100.0f) {
+                id(presence_state_text).publish_state("detected");
+              } else if (!id(presence_flag).state && se <= 0.0f) {
+                id(presence_state_text).publish_state("clear");
+              }
+    has_moving_target:
+      name: "Moving Target"
+    has_still_target:
+      name: "Still Target"
+    dynamic_background_correction_status:
+      name: "mmWave Clibration Status"
+
+  - platform: template
+    name: "Potenation Fire Sensor"
+    id: fire_detected
+    device_class: smoke
+    icon: mdi:fire
+    lambda: |-
+      const float iaq_v = id(iaq).state;
+      const float t = id(bme_temperature).state;
+      const float tvoc = id(ags_tvoc_raw).state;
+      const float co2 = id(scd_co2).state;
+
+      std::string s = id(bsec_iaq_acc).state;
+      for (auto &ch : s) ch = (char)tolower((unsigned char)ch);
+
+      if (isnan(iaq_v) || isnan(t) || isnan(tvoc) || isnan(co2) || s.empty()) return false;
+
+      const bool iaq_bad = iaq_v >= 201.0f;
+      const bool hot = t > 50.0f;
+      const bool tvoc_high = tvoc > 660.0f;
+      const bool co2_high = co2 > 1000.0f;
+      const bool acc_ok = (s == "calibrated");
+
+      return iaq_bad && hot && tvoc_high && co2_high && acc_ok;
+    filters:
+      - delayed_on: 30s
+      - delayed_off: 120s
+
