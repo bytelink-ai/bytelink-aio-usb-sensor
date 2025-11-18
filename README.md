@@ -25,29 +25,65 @@ A comprehensive ESPHome-based sensor package for the Bytelink All-in-One USB Sen
 
 ## Installation
 
-### Method 1: ESPHome Dashboard (Recommended)
+### For Home Assistant Users (Recommended)
+
+#### Initial Setup via ESPHome Addon
+
+1. **Install ESPHome Addon** (if not already installed):
+   - Go to **Settings** → **Add-ons** → **Add-on Store**
+   - Search for "ESPHome" and install it
+   - Start the addon and open the Web UI
+
+2. **Add Your Device**:
+   - In the ESPHome Web UI, click the **"+"** (plus) button
+   - Select **"Continue"** to create a new device
+   - Choose **"Skip"** when asked to create a new device (we'll import instead)
+   - Click **"EDIT"** on the new device
+   - Delete the default content and paste the contents of `bytelink-usbaio.yaml` from this repository
+   - Or click **"IMPORT"** and paste the raw GitHub URL:
+     ```
+     https://raw.githubusercontent.com/bytelink-ai/bytelink-aio-usb-sensor/main/bytelink-usbaio.yaml
+     ```
+
+3. **Configure WiFi**:
+   - In the ESPHome addon, go to **Settings** → **Secrets**
+   - Add your WiFi credentials:
+     ```yaml
+     wifi_ssid: "YourWiFiSSID"
+     wifi_password: "YourWiFiPassword"
+     ```
+
+4. **Flash the Device**:
+   - Connect your device via USB
+   - In ESPHome, click **"INSTALL"** → **"Plug into the computer running ESPHome"**
+   - Select your USB port and click **"INSTALL"**
+   - Wait for the installation to complete
+
+5. **Auto-Discovery in Home Assistant**:
+   - Once flashed and connected to WiFi, the device will automatically appear in Home Assistant
+   - Go to **Settings** → **Devices & Services** → **ESPHome**
+   - The device should appear automatically via mDNS discovery
+   - If it doesn't appear automatically, click **"CONFIGURE"** → **"Enter Manually"** and enter the device IP or hostname
+
+#### Alternative: Using Package Structure (For Updates)
+
+For easier updates, you can use the modular package structure:
+
+1. Download or clone this repository to your Home Assistant ESPHome config directory
+2. Copy `secrets.yaml.example` to `secrets.yaml` in the ESPHome config directory
+3. Add your WiFi credentials to `secrets.yaml`
+4. In ESPHome Web UI, create a new device and use:
+   ```yaml
+   packages:
+     github: github://bytelink-ai/bytelink-aio-usb-sensor/package.yaml@main
+   ```
+
+### For Standalone ESPHome Dashboard Users
 
 1. Open ESPHome Dashboard
 2. Click **"+"** to add a new device
-3. Select **"Install from repository"**
-4. Enter the repository URL:
-   ```
-   https://github.com/YOUR_USERNAME/YOUR_REPO_NAME
-   ```
-5. Select `package.yaml` as the configuration file
-6. ESPHome will automatically detect and install the package
-
-### Method 2: Manual Installation
-
-1. Clone or download this repository
-2. Copy `secrets.yaml.example` to `secrets.yaml`
-3. Edit `secrets.yaml` and add your WiFi credentials:
-   ```yaml
-   wifi_ssid: "YourWiFiSSID"
-   wifi_password: "YourWiFiPassword"
-   ```
-4. In ESPHome Dashboard, click **"+"** and select **"Upload a YAML file"**
-5. Select `package.yaml` from this repository
+3. Select **"Upload a YAML file"** or **"Install from repository"** (if available)
+4. Use `bytelink-usbaio.yaml` for single-file setup, or `package.yaml` for modular structure
 
 ## Configuration
 
@@ -91,12 +127,28 @@ You can modify any of these files to customize the device behavior. After making
 
 ## Updates
 
+### For Home Assistant Users
+
 When you update this repository, your customers can easily update their devices:
 
-1. In ESPHome Dashboard, select the device
-2. Click **"UPDATE"**
-3. ESPHome will automatically pull the latest version from GitHub
+**Method 1: Automatic Update (Recommended)**
+1. In Home Assistant, go to **Settings** → **Devices & Services** → **ESPHome**
+2. Select your device
+3. Click **"UPDATE"** (if using package structure with GitHub source)
 4. The device will be updated via OTA
+
+**Method 2: Manual Update**
+1. In ESPHome Web UI, open your device configuration
+2. Click **"UPDATE"** → **"UPDATE"** (downloads latest from GitHub if using package)
+3. Or manually copy the latest `bytelink-usbaio.yaml` content and click **"SAVE"** → **"INSTALL"** → **"Wirelessly (OTA)"**
+
+**Method 3: Using Package with GitHub Source**
+If you set up the device using the package structure with GitHub source:
+```yaml
+packages:
+  github: github://YOUR_USERNAME/YOUR_REPO_NAME/package.yaml@main
+```
+Updates will automatically pull from GitHub when you click **"UPDATE"**.
 
 ## Hardware
 

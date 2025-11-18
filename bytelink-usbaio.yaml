@@ -1,0 +1,564 @@
+# Single-file configuration for easy Home Assistant ESPHome installation
+# This file combines all modules for simpler initial setup
+# For updates, use the modular package.yaml structure
+
+esphome:
+  name: bytelink-usbaio
+  friendly_name: usbaio
+  name_add_mac_suffix: true
+  project:
+    name: bytelink.aios_room_sensorHV
+    version: "1.0.0"
+
+esp32:
+  board: esp32-c6-devkitm-1
+  framework:
+    type: esp-idf
+    version: recommended
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "AiOHotspot"
+    password: "SmartHome2025"
+
+captive_portal:
+
+mdns:
+  disabled: false
+  services:
+    - service: _esphomelib
+      protocol: _tcp
+      port: 6053
+
+i2c:
+  sda: GPIO0
+  scl: GPIO1
+  frequency: 15khz
+  scan: false
+
+uart:
+  - id: zigbee
+    rx_pin: GPIO2
+    tx_pin: GPIO3
+    baud_rate: 460800
+  - id: presence
+    tx_pin: GPIO17
+    rx_pin: GPIO16
+    baud_rate: 115200
+    parity: NONE
+    stop_bits: 1
+
+ld2412:
+  id: ld2412_radar
+  uart_id: presence
+
+bme68x_bsec2_i2c:
+  address: 0x76
+  model: bme688
+  operating_age: 28d
+  supply_voltage: 3.3V
+  sample_rate: LP
+  state_save_interval: 6h
+  temperature_offset: 35
+
+sensor:
+  - platform: bme68x_bsec2
+    temperature:
+      name: "Temperature"
+      id: bme_temperature
+      device_class: temperature
+    humidity:
+      name: "Humidity"
+      unit_of_measurement: "%"
+      id: bme_humidity
+      device_class: humidity
+      internal: true
+    pressure:
+      name: "Air Pressure"
+      id: bme_pressure
+      icon: "mdi:gauge"
+      device_class: pressure
+    co2_equivalent:
+      name: "eCO2"
+      icon: "mdi:molecule-co2"
+      device_class: carbon_dioxide
+    breath_voc_equivalent:
+      name: "VOC Breath Equivalent"
+      icon: "mdi:molecule"
+      device_class: volatile_organic_compounds
+    iaq:
+      name: "In Air Quality"
+      id: iaq
+      icon: "mdi:approximately-equal"
+    gas_resistance:
+      name: "BME Gas Resistance"
+      icon: "mdi:omega"
+      internal: true
+
+  - platform: scd4x
+    ambient_pressure_compensation_source: bme_pressure
+    ambient_pressure_compensation: true
+    id: scd40_component
+    co2:
+      name: "CO2 Concentration"
+      id: scd_co2
+    temperature:
+      id: scd41_temperature
+      name: "Device Temperature"
+      device_class: temperature
+    humidity:
+      id: scd41_humidity
+      name: "Device Humidity"
+      device_class: humidity
+    measurement_mode: single_shot
+    update_interval: 3s
+    address: 0x62
+    automatic_self_calibration: false
+
+  - platform: template
+    name: "Humidity"
+    id: bme_humidity_new
+    device_class: humidity
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    lambda: |-
+      float T = id(bme_temperature).state;
+      float RH = id(bme_humidity).state;
+      if (isnan(T) || isnan(RH)) return NAN;
+
+      const float T0 = 20.0f;
+      const float ALPHA = -1.00f;
+      float dT = (T > T0) ? ALPHA * logf(1.0f + (T - T0)) : 0.0f;
+
+      const float a = 17.62f, b = 243.12f;
+      float gamma = (a*T)/(b+T) + logf(fmaxf(RH, 0.1f)/100.0f);
+      float Td = (b*gamma) / (a - gamma);
+
+      float gamma2 = (a*(T + dT))/(b + (T + dT));
+      float RH_corr = 100.0f * expf((a*Td)/(b+Td) - gamma2);
+
+      return fminf(100.0f, fmaxf(0.0f, RH_corr));
+
+  - platform: bh1750
+    name: "Illuminance Sensor"
+    update_interval: 60s
+
+  - platform: ags10
+    id: ags10_1
+    tvoc:
+      name: "TVOC"
+      id: ags_tvoc_raw
+    address: 0x1A
+    update_interval: 60s
+
+  - platform: ld2412
+    moving_distance:
+      name: "Moving Distance"
+      id: moving_distance
+    still_distance:
+      name: "Still Distance"
+      id: still_distance
+    moving_energy:
+      name: "Moving Energy"
+    still_energy:
+      name: "Still Energy"
+      id: still_energy
+      on_value:
+        then:
+          - lambda: |-
+              float se = id(still_energy).state;
+              if (id(presence_flag).state && se > 0.0f && se <= 100.0f) {
+                id(presence_state_text).publish_state("detected");
+              } else if (!id(presence_flag).state && se <= 0.0f) {
+                id(presence_state_text).publish_state("clear");
+              }
+    gate_0:
+      move_energy:
+        name: "Gate 0 move energy"
+      still_energy:
+        name: "Gate 0 still energy"
+    gate_1:
+      move_energy:
+        name: "Gate 1 move energy"
+      still_energy:
+        name: "Gate 1 still energy"
+    gate_2:
+      move_energy:
+        name: "Gate 2 move energy"
+      still_energy:
+        name: "Gate 2 still energy"
+    gate_3:
+      move_energy:
+        name: "Gate 3 move energy"
+      still_energy:
+        name: "Gate 3 still energy"
+    gate_4:
+      move_energy:
+        name: "Gate 4 move energy"
+      still_energy:
+        name: "Gate 4 still energy"
+    gate_5:
+      move_energy:
+        name: "Gate 5 move energy"
+      still_energy:
+        name: "Gate 5 still energy"
+    gate_6:
+      move_energy:
+        name: "Gate 6 move energy"
+      still_energy:
+        name: "Gate 6 still energy"
+    gate_7:
+      move_energy:
+        name: "Gate 7 move energy"
+      still_energy:
+        name: "Gate 7 still energy"
+    gate_8:
+      move_energy:
+        name: "Gate 8 move energy"
+      still_energy:
+        name: "Gate 8 still energy"
+    gate_9:
+      move_energy:
+        name: "Gate 9 move energy"
+      still_energy:
+        name: "Gate 9 still energy"
+    gate_10:
+      move_energy:
+        name: "Gate 10 move energy"
+      still_energy:
+        name: "Gate 10 still energy"
+    gate_11:
+      move_energy:
+        name: "Gate 11 move energy"
+      still_energy:
+        name: "Gate 11 still energy"
+    gate_12:
+      move_energy:
+        name: "Gate 12 move energy"
+      still_energy:
+        name: "Gate 12 still energy"
+    gate_13:
+      move_energy:
+        name: "Gate 13 move energy"
+      still_energy:
+        name: "Gate 13 still energy"
+
+binary_sensor:
+  - platform: ld2412
+    has_target:
+      name: "Presence"
+      id: presence_flag
+      on_state:
+        then:
+          - lambda: |-
+              float se = id(still_energy).state;
+              if (id(presence_flag).state && se > 0.0f && se <= 100.0f) {
+                id(presence_state_text).publish_state("detected");
+              } else if (!id(presence_flag).state && se <= 0.0f) {
+                id(presence_state_text).publish_state("clear");
+              }
+    has_moving_target:
+      name: "Moving Target"
+    has_still_target:
+      name: "Still Target"
+    dynamic_background_correction_status:
+      name: "mmWave Clibration Status"
+
+  - platform: template
+    name: "Potenation Fire Sensor"
+    id: fire_detected
+    device_class: smoke
+    icon: mdi:fire
+    lambda: |-
+      const float iaq_v = id(iaq).state;
+      const float t = id(bme_temperature).state;
+      const float tvoc = id(ags_tvoc_raw).state;
+      const float co2 = id(scd_co2).state;
+
+      std::string s = id(bsec_iaq_acc).state;
+      for (auto &ch : s) ch = (char)tolower((unsigned char)ch);
+
+      if (isnan(iaq_v) || isnan(t) || isnan(tvoc) || isnan(co2) || s.empty()) return false;
+
+      const bool iaq_bad = iaq_v >= 201.0f;
+      const bool hot = t > 50.0f;
+      const bool tvoc_high = tvoc > 660.0f;
+      const bool co2_high = co2 > 1000.0f;
+      const bool acc_ok = (s == "calibrated");
+
+      return iaq_bad && hot && tvoc_high && co2_high && acc_ok;
+    filters:
+      - delayed_on: 30s
+      - delayed_off: 120s
+
+switch:
+  - platform: gpio
+    pin: GPIO7
+    id: zRST_gpio
+    inverted: true
+    restore_mode: ALWAYS_OFF
+
+  - platform: template
+    name: "Zigbee Reset"
+    icon: mdi:toggle-switch
+    id: zRST
+    turn_on_action:
+      - switch.turn_on: zRST_gpio
+      - delay: 15ms
+      - switch.turn_off: zRST_gpio
+
+  - platform: gpio
+    pin: GPIO14
+    name: "Zigbee Flashmode"
+    icon: mdi:toggle-switch
+    id: zBSL
+    inverted: true
+    internal: true
+    restore_mode: ALWAYS_OFF
+
+  - platform: template
+    name: "Zigbee Update"
+    id: zigbee_update
+    icon: mdi:cellphone-arrow-down
+    turn_on_action:
+      - script.execute: fw_update_mode
+    turn_off_action:
+      - switch.toggle: zRST
+
+  - platform: ld2412
+    engineering_mode:
+      name: "mmWave Engineering Mode"
+    bluetooth:
+      name: "mmWave Bluetooth"
+
+text_sensor:
+  - platform: bme68x_bsec2
+    iaq_accuracy:
+      name: "IAQ Accuracy"
+      id: bsec_iaq_acc
+
+  - platform: template
+    name: "IAQ Classification"
+    lambda: |-
+      if (int(id(iaq).state) <= 50) {
+        return {"Excellent"};
+      }
+      else if (int(id(iaq).state) >= 51 && int(id(iaq).state) <= 100) {
+        return {"Good"};
+      }
+      else if (int(id(iaq).state) >= 101 && int(id(iaq).state) <= 150) {
+        return {"Lightly polluted"};
+      }
+      else if (int(id(iaq).state) >= 151 && int(id(iaq).state) <= 200) {
+        return {"Moderately polluted"};
+      }
+      else if (int(id(iaq).state) >= 201 && int(id(iaq).state) <= 250) {
+        return {"Heavily polluted"};
+      }
+      else if (int(id(iaq).state) >= 251 && int(id(iaq).state) <= 350) {
+        return {"Severely polluted"};
+      }
+      else if (int(id(iaq).state) >= 351) {
+        return {"Extremely polluted"};
+      }
+      else {
+        return {"error"};
+      }
+
+  - platform: wifi_info
+    ip_address:
+      name: "ESP IP Address"
+
+  - platform: template
+    name: "TVOC Category"
+    lambda: |-
+      if (id(ags_tvoc_raw).state <= 220.0) {
+        return {"Good"};
+      } else if (id(ags_tvoc_raw).state <= 660.0) {
+        return {"Moderate"};
+      } else if (id(ags_tvoc_raw).state <= 1430.0) {
+        return {"High"};
+      } else if (id(ags_tvoc_raw).state <= 2200.0) {
+        return {"Very High"};
+      } else {
+        return {"Extreme"};
+      }
+    update_interval: 60s
+
+  - platform: template
+    name: "Potenntial Breathing Sensor"
+    id: presence_state_text
+    icon: mdi:lungs
+
+  - platform: ld2412
+    version:
+      name: "mmWave Firmware Version"
+    mac_address:
+      name: "mmWave Mac Address"
+
+number:
+  - platform: ld2412
+    timeout:
+      name: "Presence Timeout"
+    min_distance_gate:
+      name: "Minimum Distance Gate"
+    max_distance_gate:
+      name: "Maximum Distance Gate"
+    light_threshold:
+      name: "Light Threshold"
+    gate_0:
+      move_threshold:
+        name: "Gate 0 Move Threshold"
+      still_threshold:
+        name: "Gate 0 Still Threshold"
+    gate_1:
+      move_threshold:
+        name: "Gate 1 Move Threshold"
+      still_threshold:
+        name: "Gate 1 Still Threshold"
+    gate_2:
+      move_threshold:
+        name: "Gate 2 Move Threshold"
+      still_threshold:
+        name: "Gate 2 Still Threshold"
+    gate_3:
+      move_threshold:
+        name: "Gate 3 Move Threshold"
+      still_threshold:
+        name: "Gate 3 Still Threshold"
+    gate_4:
+      move_threshold:
+        name: "Gate 4 Move Threshold"
+      still_threshold:
+        name: "Gate 4 Still Threshold"
+    gate_5:
+      move_threshold:
+        name: "Gate 5 Move Threshold"
+      still_threshold:
+        name: "Gate 5 Still Threshold"
+    gate_6:
+      move_threshold:
+        name: "Gate 6 Move Threshold"
+      still_threshold:
+        name: "Gate 6 Still Threshold"
+    gate_7:
+      move_threshold:
+        name: "Gate 7 Move Threshold"
+      still_threshold:
+        name: "Gate 7 Still Threshold"
+    gate_8:
+      move_threshold:
+        name: "Gate 8 Move Threshold"
+      still_threshold:
+        name: "Gate 8 Still Threshold"
+    gate_9:
+      move_threshold:
+        name: "Gate 9 Move Threshold"
+      still_threshold:
+        name: "Gate 9 Still Threshold"
+    gate_10:
+      move_threshold:
+        name: "Gate 10 Move Threshold"
+      still_threshold:
+        name: "Gate 10 Still Threshold"
+    gate_11:
+      move_threshold:
+        name: "Gate 11 Move Threshold"
+      still_threshold:
+        name: "Gate 11 Still Threshold"
+    gate_12:
+      move_threshold:
+        name: "Gate 12 Move Threshold"
+      still_threshold:
+        name: "Gate 12 Still Threshold"
+    gate_13:
+      move_threshold:
+        name: "Gate 13 Move Threshold"
+      still_threshold:
+        name: "Gate 13 Still Threshold"
+
+button:
+  - platform: template
+    name: "Calibrate CO2 Sensor"
+    entity_category: config
+    on_press:
+      - scd4x.perform_forced_calibration:
+          value: 426
+          id: scd40_component
+
+  - platform: template
+    name: "TVOC Calibration"
+    icon: mdi:lungs
+    entity_category: config
+    on_press:
+      - ags10.set_zero_point:
+          id: ags10_1
+          mode: CURRENT_VALUE
+
+  - platform: restart
+    icon: mdi:power-cycle
+    name: "ESP Reboot"
+    entity_category: diagnostic
+
+  - platform: ld2412
+    factory_reset:
+      name: "mmWave Factory Reset"
+    restart:
+      name: "mmWave Restart"
+    query_params:
+      name: "mmWave Default"
+    start_dynamic_background_correction:
+      name: "mmWave Calibration"
+
+select:
+  - platform: ld2412
+    distance_resolution:
+      name: "mmWave Distance Resolution"
+
+script:
+  - id: fw_update_mode
+    then:
+      - switch.turn_on: zBSL
+      - delay: 20ms
+      - switch.turn_on: zRST_gpio
+      - delay: 25ms
+      - switch.turn_off: zRST_gpio
+      - delay: 100ms
+      - switch.turn_off: zBSL
+
+  - id: exit_update_mode
+    then:
+      - switch.turn_off: zBSL
+      - delay: 10ms
+      - switch.turn_on: zRST_gpio
+      - delay: 25ms
+      - switch.turn_off: zRST_gpio
+
+external_components:
+  - source: github://mercenaruss/esphome-stream-server
+
+stream_server:
+  uart_id: zigbee
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 500ms
+    window: 250ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+api:
+  encryption:
+
+ota:
+  - platform: esphome
+
+web_server:
+  port: 80
+
+logger:
+

@@ -15,6 +15,10 @@ captive_portal:
 
 mdns:
   disabled: false
+  services:
+    - service: _esphomelib
+      protocol: _tcp
+      port: 6053
 
 i2c:
   sda: GPIO0
