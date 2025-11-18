@@ -61,12 +61,11 @@ bluetooth_proxy:
   active: true
 
 api:
-  # encryption:
-  #   key: !secret api_encryption_key  # Optional: uncomment and add to secrets.yaml
+  # Encryption key will be set automatically by Home Assistant during first connection
+  encryption:
 
 ota:
   - platform: esphome
-    # password: !secret ota_password  # Optional: uncomment and add to secrets.yaml
 
 web_server:
   port: 80
