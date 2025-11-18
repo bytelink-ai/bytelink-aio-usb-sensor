@@ -37,13 +37,13 @@ A comprehensive ESPHome-based sensor package for the Bytelink All-in-One USB Sen
 2. **Add Your Device**:
    - In the ESPHome Web UI, click the **"+"** (plus) button
    - Select **"Continue"** to create a new device
-   - Choose **"Skip"** when asked to create a new device (we'll import instead)
    - Click **"EDIT"** on the new device
-   - Delete the default content and paste the contents of `bytelink-usbaio.yaml` from this repository
-   - Or click **"IMPORT"** and paste the raw GitHub URL:
+   - Delete the default content and paste this:
+     ```yaml
+     packages:
+       github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio-github.yaml@main
      ```
-     https://raw.githubusercontent.com/bytelink-ai/bytelink-aio-usb-sensor/main/bytelink-usbaio.yaml
-     ```
+   - This will automatically pull all modules from the GitHub repository
 
 3. **Configure WiFi**:
    - In the ESPHome addon, go to **Settings** → **Secrets**
@@ -65,18 +65,17 @@ A comprehensive ESPHome-based sensor package for the Bytelink All-in-One USB Sen
    - The device should appear automatically via mDNS discovery
    - If it doesn't appear automatically, click **"CONFIGURE"** → **"Enter Manually"** and enter the device IP or hostname
 
-#### Alternative: Using Package Structure (For Updates)
+#### Alternative: Single-File Configuration
 
-For easier updates, you can use the modular package structure:
+If you prefer a single-file configuration instead of modular:
 
-1. Download or clone this repository to your Home Assistant ESPHome config directory
-2. Copy `secrets.yaml.example` to `secrets.yaml` in the ESPHome config directory
-3. Add your WiFi credentials to `secrets.yaml`
-4. In ESPHome Web UI, create a new device and use:
+1. In ESPHome Web UI, create a new device
+2. Use this instead:
    ```yaml
    packages:
-     github: github://bytelink-ai/bytelink-aio-usb-sensor/package.yaml@main
+     github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio.yaml@main
    ```
+   This uses a single monolithic file instead of separate modules.
 
 ### For Standalone ESPHome Dashboard Users
 
@@ -142,13 +141,11 @@ When you update this repository, your customers can easily update their devices:
 2. Click **"UPDATE"** → **"UPDATE"** (downloads latest from GitHub if using package)
 3. Or manually copy the latest `bytelink-usbaio.yaml` content and click **"SAVE"** → **"INSTALL"** → **"Wirelessly (OTA)"**
 
-**Method 3: Using Package with GitHub Source**
-If you set up the device using the package structure with GitHub source:
-```yaml
-packages:
-  github: github://YOUR_USERNAME/YOUR_REPO_NAME/package.yaml@main
-```
-Updates will automatically pull from GitHub when you click **"UPDATE"**.
+**Method 3: Automatic Module Updates (Recommended)**
+If you set up the device using `bytelink-usbaio-github.yaml`:
+- Individual module files (sensors.yaml, base.yaml, etc.) can be updated independently
+- When you update any module file in the GitHub repository, customers can pull updates
+- Click **"UPDATE"** in ESPHome to pull the latest module versions from GitHub
 
 ## Hardware
 

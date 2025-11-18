@@ -2,13 +2,13 @@
 
 ## Main File for Commercial Use
 
-**`bytelink-usbaio.yaml`** is the primary file for commercial distribution.
+**`bytelink-usbaio-github.yaml`** is the primary file for commercial distribution.
 
-This single-file configuration allows you to:
-- ✅ Easily update all customer devices from one file
-- ✅ Push updates that customers can pull automatically
-- ✅ Maintain version control with simple commits
-- ✅ Provide simple installation for customers
+This file references all modules from your GitHub repository, allowing you to:
+- ✅ Update individual modules (sensors, switches, etc.) independently
+- ✅ Customers automatically pull module updates from GitHub
+- ✅ Maintain modular code structure for easier maintenance
+- ✅ Update specific components without touching the entire config
 
 ## Customer Installation (One-Time Setup)
 
@@ -20,43 +20,61 @@ Have your customers install using the GitHub package method:
 2. Customer pastes this into the device configuration:
    ```yaml
    packages:
-     github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio.yaml@main
+     github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio-github.yaml@main
    ```
 3. Customer adds WiFi secrets and flashes the device
 4. Device is set up and ready
 
-**That's it!** The device will now pull updates from your GitHub repository.
+**That's it!** The device will now pull all modules from your GitHub repository and can be updated automatically.
 
 ## How to Update Customer Devices
 
-### Step 1: Make Your Changes
+### Option 1: Update Individual Modules (Recommended)
 
-Edit `bytelink-usbaio.yaml` with your updates:
-- Fix bugs
-- Add new features
-- Update sensor configurations
-- Change default settings
+You can update specific modules without touching others:
 
-### Step 2: Update Version Number (Optional but Recommended)
-
-In `bytelink-usbaio.yaml`, update the version:
-```yaml
-esphome:
-  name: bytelink-usbaio
-  friendly_name: usbaio
-  name_add_mac_suffix: true
-  project:
-    name: bytelink.aios_room_sensorHV
-    version: "1.0.1"  # ← Increment this (1.0.0 → 1.0.1 → 1.0.2, etc.)
-```
-
-### Step 3: Commit and Push
-
+**Example: Update sensor configuration**
 ```bash
-git add bytelink-usbaio.yaml
-git commit -m "Update firmware v1.0.1 - [describe your changes]"
+# Edit sensors.yaml with your changes
+git add sensors.yaml
+git commit -m "Update sensor configuration - improved calibration"
 git push origin main
 ```
+
+**Example: Update base configuration**
+```bash
+# Edit base.yaml (WiFi, hardware settings, etc.)
+git add base.yaml
+git commit -m "Update base config - new WiFi settings"
+git push origin main
+```
+
+**Example: Update version number**
+```bash
+# Edit bytelink-usbaio-github.yaml
+# Update version: "1.0.0" → "1.0.1"
+git add bytelink-usbaio-github.yaml
+git commit -m "Bump version to 1.0.1"
+git push origin main
+```
+
+### Option 2: Update Main File
+
+If you need to change the main configuration (name, version, etc.):
+
+1. Edit `bytelink-usbaio-github.yaml`
+2. Update version number:
+   ```yaml
+   project:
+     name: bytelink.aios_room_sensorHV
+     version: "1.0.1"  # ← Increment this
+   ```
+3. Commit and push:
+   ```bash
+   git add bytelink-usbaio-github.yaml
+   git commit -m "Update firmware v1.0.1 - [describe your changes]"
+   git push origin main
+   ```
 
 ### Step 4: Customers Update Their Devices
 
@@ -68,20 +86,33 @@ Customers update via ESPHome:
 5. Click **"INSTALL"** → **"Wirelessly (OTA)"**
 6. Device updates without physical access
 
-## Alternative: Using Modular Package Structure
+## Module Files Structure
 
-If you prefer to maintain separate files for different components, you can use `package.yaml`:
+The main file (`bytelink-usbaio-github.yaml`) references these modules from GitHub:
+
+- `base.yaml` - Core ESP32, WiFi, hardware configuration
+- `sensors.yaml` - All sensor definitions
+- `binary_sensors.yaml` - Binary sensor definitions  
+- `switches.yaml` - Switch and control definitions
+- `text_sensors.yaml` - Text sensor definitions
+- `numbers.yaml` - Number entity definitions
+- `buttons.yaml` - Button definitions
+- `scripts.yaml` - Automation scripts
+- `external_components.yaml` - External component dependencies
+
+**Update any of these files independently**, and customers can pull the updates automatically.
+
+## Alternative: Single-File Configuration
+
+If you prefer a single monolithic file for simpler updates, use `bytelink-usbaio.yaml`:
 
 ### Customer Installation:
 ```yaml
 packages:
-  github: github://bytelink-ai/bytelink-aio-usb-sensor/package.yaml@main
+  github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio.yaml@main
 ```
 
-### For Updates:
-Update individual module files (e.g., `sensors.yaml`, `base.yaml`) and push. Customers pull updates the same way.
-
-**Note:** The modular approach is better if you frequently update specific components, but requires customers to pull all files. The single-file approach is simpler for most commercial use cases.
+**Note:** The modular approach (`bytelink-usbaio-github.yaml`) is recommended for commercial use as it allows updating individual components without affecting the entire configuration.
 
 ## Version Management Best Practices
 
@@ -115,10 +146,18 @@ When you release an update, notify customers:
 ## Summary
 
 **For Commercial Use:**
-- **Main file:** `bytelink-usbaio.yaml`
-- **Customer setup:** Use GitHub package reference
-- **Your updates:** Edit `bytelink-usbaio.yaml` → Commit → Push
-- **Customer updates:** Click UPDATE in ESPHome → OTA install
+- **Main file:** `bytelink-usbaio-github.yaml` (references modules from GitHub)
+- **Customer setup:** Use GitHub package reference to main file
+- **Your updates:** 
+  - Update individual module files (e.g., `sensors.yaml`, `base.yaml`) → Commit → Push
+  - Or update main file for version/name changes
+- **Customer updates:** Click UPDATE in ESPHome → OTA install → Pulls latest from GitHub
+
+**Benefits:**
+- ✅ Update individual components independently
+- ✅ Customers automatically get module updates
+- ✅ Maintain clean modular code structure
+- ✅ Easy to maintain and version control
 
 This gives you full control over customer device updates while keeping the process simple for end users.
 

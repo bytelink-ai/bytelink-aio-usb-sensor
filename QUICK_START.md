@@ -12,27 +12,31 @@
 
 ### 2. Add Your Device Configuration
 
-**Option A: Import from GitHub (Easiest)**
+**Option A: Import from GitHub (Recommended - Modular)**
 
 1. In ESPHome Web UI, click the **"+"** button
 2. Enter a name (e.g., `bytelink-usbaio`)
 3. Click **"EDIT"**
 4. Delete all default content
-5. Paste this at the top of the file:
+5. Paste this:
+   ```yaml
+   packages:
+     github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio-github.yaml@main
+   ```
+   This pulls all modules from GitHub and allows automatic updates.
+
+**Option B: Single-File Configuration**
+
+1. In ESPHome Web UI, click the **"+"** button
+2. Enter a name (e.g., `bytelink-usbaio`)
+3. Click **"EDIT"**
+4. Delete all default content
+5. Paste this:
    ```yaml
    packages:
      github: github://bytelink-ai/bytelink-aio-usb-sensor/bytelink-usbaio.yaml@main
    ```
-
-**Option B: Copy-Paste Configuration**
-
-1. In ESPHome Web UI, click the **"+"** button
-2. Enter a name (e.g., `bytelink-usbaio`)
-3. Click **"EDIT"**
-4. Delete all default content
-5. Go to: `https://raw.githubusercontent.com/bytelink-ai/bytelink-aio-usb-sensor/main/bytelink-usbaio.yaml`
-6. Copy the entire content and paste it into the ESPHome editor
-7. Click **"SAVE"**
+   This uses a single monolithic file.
 
 ### 3. Configure WiFi Secrets
 

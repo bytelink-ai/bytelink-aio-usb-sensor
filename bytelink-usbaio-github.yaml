@@ -1,0 +1,26 @@
+# Main configuration file for Bytelink All-in-One USB Sensor
+# This file references all modules from the GitHub repository
+# Customers install this file, and it automatically pulls modules from GitHub
+# When you update any module file in the repo, customers can pull updates via OTA
+
+esphome:
+  name: bytelink-usbaio
+  friendly_name: usbaio
+  name_add_mac_suffix: true
+  project:
+    name: bytelink.aios_room_sensorHV
+    version: "1.0.0"
+
+# All modules are pulled from GitHub repository
+# Update any module file in the repo, and customers can pull updates automatically
+packages:
+  base: github://bytelink-ai/bytelink-aio-usb-sensor/base.yaml@main
+  sensors: github://bytelink-ai/bytelink-aio-usb-sensor/sensors.yaml@main
+  binary_sensors: github://bytelink-ai/bytelink-aio-usb-sensor/binary_sensors.yaml@main
+  switches: github://bytelink-ai/bytelink-aio-usb-sensor/switches.yaml@main
+  text_sensors: github://bytelink-ai/bytelink-aio-usb-sensor/text_sensors.yaml@main
+  numbers: github://bytelink-ai/bytelink-aio-usb-sensor/numbers.yaml@main
+  buttons: github://bytelink-ai/bytelink-aio-usb-sensor/buttons.yaml@main
+  scripts: github://bytelink-ai/bytelink-aio-usb-sensor/scripts.yaml@main
+  external_components: github://bytelink-ai/bytelink-aio-usb-sensor/external_components.yaml@main
+
