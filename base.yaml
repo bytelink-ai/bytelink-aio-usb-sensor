@@ -15,7 +15,7 @@ wifi:
 
 captive_portal:
 
-# Improv BLE for easy WiFi setup via Home Assistant or mobile app (like Everything Presence Lite)
+# Improv BLE for easy WiFi setup via Home Assistant or mobile app
 esp32_improv:
   authorizer: none
   on_provisioned:
