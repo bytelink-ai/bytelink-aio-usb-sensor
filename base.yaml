@@ -10,8 +10,13 @@ wifi:
   ap:
     ssid: "AiOHotspot"
     password: "SmartHome2025"
+  # Enable fast connect for faster WiFi connection
+  fast_connect: false
 
 captive_portal:
+
+# Improv BLE for easy WiFi setup via Home Assistant or mobile app
+improv_serial:
 
 mdns:
   disabled: false
@@ -62,7 +67,10 @@ bluetooth_proxy:
 
 api:
   # Encryption key will be set automatically by Home Assistant during first connection
+  # This enables automatic discovery and binding in Home Assistant
   encryption:
+  # Optional: Add reboot_timeout to automatically reboot if connection is lost
+  reboot_timeout: 15min
 
 ota:
   - platform: esphome
