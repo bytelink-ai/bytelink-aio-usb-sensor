@@ -15,8 +15,15 @@ wifi:
 
 captive_portal:
 
-# Improv BLE for easy WiFi setup via Home Assistant or mobile app
-improv_serial:
+# Improv BLE for easy WiFi setup via Home Assistant or mobile app (like Everything Presence Lite)
+esp32_improv:
+  authorizer: none
+  on_provisioned:
+    then:
+      - logger.log: "Improv WiFi provisioned successfully"
+  on_provisioning:
+    then:
+      - logger.log: "Improv WiFi provisioning in progress"
 
 mdns:
   disabled: false
